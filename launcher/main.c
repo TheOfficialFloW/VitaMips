@@ -30,8 +30,8 @@ int WriteFile(char *file, void *buf, int size) {
 
 int main() {
   int res;
-
-	psvDebugScreenInit();
+	
+  psvDebugScreenInit();
 
   SceCompatCdram cdram;
   res = sceCompatAllocCdramWithHole(&cdram);
@@ -70,6 +70,6 @@ int main() {
 
   sceCompatStop();
   sceCompatUninit();
-
-	return 0;
+	
+  return 0;
 }
