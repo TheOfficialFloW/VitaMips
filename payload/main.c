@@ -1,6 +1,94 @@
 #include <pspsdk.h>
 #include <string.h>
 
+#define REG32(ADDR) (*(volatile u32 *)(ADDR))
+
+#define ALIGN(x, align) (((x) + ((align) - 1)) & ~((align) - 1))
+
+#define MAX_INTR_HANDLERS 14
+
+typedef struct {
+  u32 unk_0;
+  u32 unk_4;
+} SceKermitInterrupt;
+
+static void (* g_virtual_intr_handlers[MAX_INTR_HANDLERS])(void);
+
+inline static void raiseCompatInterrupt(u32 val) {
+  u32 old_val = REG32(0xBC300050);
+  REG32(0xBC300050) = old_val & ~val;
+  REG32(0xBC300050) = old_val | val;
+}
+
+static void sceKermitWaitReady(void) {
+  __asm__ volatile ("sync");
+
+  REG32(0xBD000004) = 0xf;
+
+  while ((REG32(0xBD000004)) != 0);
+  while ((REG32(0xBD000000)) != 0xf);
+}
+
+static void handleVirtualInterrupt(u16 bits) {
+  SceKermitInterrupt *interrupt;
+  int i;
+
+  for (i = 0; i < 16; i++) {
+    if (bits & (1 << i)) {
+      if (g_virtual_intr_handlers[i])
+        g_virtual_intr_handlers[i]();
+
+      interrupt = (SceKermitInterrupt *)0xBFC008C0;
+      interrupt[i].unk_0 = 0;
+    }
+  }
+}
+
+static int sceKermitInterruptHandler(void) {
+  u16 high_bits;
+  u32 bits;
+
+  bits = REG32(0xBC300030) & ~0x4002;
+  REG32(0xBC300030) = bits;
+  __asm__ volatile ("sync");
+
+  high_bits = bits >> 16;
+  if (high_bits != 0)
+    handleVirtualInterrupt(high_bits);
+
+  return -1;
+}
+
+int sceKermitRegisterVirtualIntrHandler(u32 intr_code, void (* handler)(void)) {
+  if (intr_code < MAX_INTR_HANDLERS)
+    g_virtual_intr_handlers[intr_code] = handler;
+
+  return 0;
+}
+
+int sceKermitInterrupt(u32 intr_code) {
+  u32 val;
+
+  sceKermitWaitReady();
+
+  val = 1 << intr_code;
+  REG32(0xBC300038) |= val;
+  raiseCompatInterrupt(val);
+
+  return 0;
+}
+
+static int sceKermitIntrInit(void) {
+  REG32(0xBC300040) = 0xffffffff;
+  REG32(0xBC300044) = 0;
+  REG32(0xBC300048) = 0xffffffff;
+  REG32(0xBC30004C) = 0;
+  REG32(0xBC300050) = 0;
+  REG32(0xBC300038) = (REG32(0xBC300038) & 0x4002) | 0xffff07f0;
+
+  return 0;
+}
+
 static u8 special_request[0x40] = {
   0x59, 0xAD, 0x29, 0xD3, 0xE6, 0x62, 0x79, 0xF1,
   0xAF, 0x53, 0x2C, 0x62, 0x79, 0x92, 0xDE, 0xCB,
@@ -25,6 +113,19 @@ static int sceKermitSpecialRequest(void) {
   return 0;
 }
 
+static int interrupt_handler(void) {
+  (*(volatile u32 *)0xA8000004)++;
+  return 0;
+}
+
+static int running = 0;
+
+static int exit_handler(void) {
+  REG32(0xBC300038) = REG32(0xBC300038) & 0x4002;
+  running = 0;
+  return 0;
+}
+
 int main(void) {
   *(volatile u32 *)0xBC000000 = 0xcccccccc;
   *(volatile u32 *)0xBC000004 = 0xcccccccc;
@@ -42,7 +143,16 @@ int main(void) {
 
   sceKermitSpecialRequest();
 
-  while (1) {
+  sceKermitIntrInit();
+  sceKermitRegisterVirtualIntrHandler(1, interrupt_handler);
+  sceKermitRegisterVirtualIntrHandler(2, exit_handler);
+
+  *(volatile u32 *)0xA8000000 = 0;
+  *(volatile u32 *)0xA8000004 = 0;
+
+  running = 1;
+  while (running) {
+    sceKermitInterruptHandler();
     (*(volatile u32 *)0xA8000000)++;
   }
 

@@ -65,8 +65,8 @@ int main() {
     printf("Press X to raise interrupt.\n");
     printf("Press START to exit.\n");
     printf("\n");
-    printf("Counter: %x\n", *(int *)cdram.cached_cdram);
-    printf("Interrupt bits: %x\n", *(int *)(cdram.cached_cdram + 4));
+    printf("Loop counter: %x\n", *(int *)cdram.cached_cdram);
+    printf("Interrupt counter: %x\n", *(int *)(cdram.cached_cdram + 4));
     printf("\n");
 
     SceCtrlData pad;
@@ -76,6 +76,8 @@ int main() {
       printf("sceCompatInterrupt: %x\n", res);
     }
     if (pad.buttons & SCE_CTRL_START) {
+      res = sceCompatInterrupt(2);
+      printf("sceCompatInterrupt: %x\n", res);
       break;
     }
 
