@@ -78,7 +78,7 @@ int main() {
     if (pad.buttons & SCE_CTRL_START) {
       break;
     }
-    
+
     sceDisplayWaitVblankStart();
   }
 

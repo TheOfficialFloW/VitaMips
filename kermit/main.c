@@ -148,8 +148,8 @@ static int sceKermitInterruptHandler(void) {
         sceKernelSignalSema(g_response_available[intr_code], 1);
       } else if (i >= 7 && i < 10) {
         intr_code = i - 7;
-        response = (SceKermitResponse *)0xBFC00840;
 
+        response = (SceKermitResponse *)0xBFC00840;
         *response[intr_code].resp = response[intr_code].val;
 
         if (sceKernelSignalSema(response[intr_code].semaid, 1) == 0) {

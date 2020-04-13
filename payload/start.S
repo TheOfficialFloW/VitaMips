@@ -30,6 +30,6 @@ loc_88600050:
   sw    $0, 0($v0)
   bne   $t0, $v0, loc_88600050
   addiu $v0, $v0, 4
-  break
 
+  break
 .end _start
