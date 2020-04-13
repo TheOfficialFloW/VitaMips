@@ -41,8 +41,8 @@ typedef struct {
 } SceKermitResponse;
 
 typedef struct {
-  u32 unk_0;
-  u32 unk_4;
+  u32 flag;
+  u32 pad;
 } SceKermitInterrupt;
 
 int sceKernelPowerLock(int lockType);
@@ -116,7 +116,7 @@ static void handleVirtualInterrupt(u16 bits) {
         g_virtual_intr_handlers[i]();
 
       interrupt = (SceKermitInterrupt *)0xBFC008C0;
-      interrupt[i].unk_0 = 0;
+      interrupt[i].flag = 0;
     }
   }
 }

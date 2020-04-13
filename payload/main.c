@@ -8,8 +8,8 @@
 #define MAX_INTR_HANDLERS 14
 
 typedef struct {
-  u32 unk_0;
-  u32 unk_4;
+  u32 flag;
+  u32 pad;
 } SceKermitInterrupt;
 
 static void (* g_virtual_intr_handlers[MAX_INTR_HANDLERS])(void);
@@ -39,7 +39,7 @@ static void handleVirtualInterrupt(u16 bits) {
         g_virtual_intr_handlers[i]();
 
       interrupt = (SceKermitInterrupt *)0xBFC008C0;
-      interrupt[i].unk_0 = 0;
+      interrupt[i].flag = 0;
     }
   }
 }
