@@ -190,7 +190,7 @@ static void power_resume_handler(void *param) {
 
 static void power_suspend_handler(void) {
   SHA1_CTX ctx;
-  u32 sha1[5], sha2[5];
+  u32 sha1[5];
   u32 fptr;
 
   u8 fake_mac[] = { 0x12, 0x34, 0x56, 0x78, 0x9a, 0x00, 0xde, 0xf0 };
@@ -206,10 +206,10 @@ static void power_suspend_handler(void) {
 
   sha1_init(&ctx);
   sha1_update(&ctx, (u8 *)sha1, sizeof(sha1));
-  sha1_final(&ctx, (u8 *)sha2);
+  sha1_final(&ctx, (u8 *)sha1);
 
   fptr = (u32)power_resume_handler;
-  REG32(0xBFC001FC) = fptr ^ sha2[0] ^ sha2[1] ^ sha2[2] ^ sha2[3] ^ sha2[4];
+  REG32(0xBFC001FC) = fptr ^ sha1[0] ^ sha1[1] ^ sha1[2] ^ sha1[3] ^ sha1[4];
 
   ClearDcache();
 
