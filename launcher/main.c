@@ -31,7 +31,7 @@ int WriteFile(char *file, void *buf, int size) {
 
 int main() {
   int res;
-	
+
   psvDebugScreenInit();
 
   SceCompatCdram cdram;
@@ -65,9 +65,14 @@ int main() {
     printf("Press X to raise interrupt.\n");
     printf("Press START to exit.\n");
     printf("\n");
+    printf("Compat status: %x\n", sceCompatGetStatus());
     printf("Loop counter: %x\n", *(int *)cdram.cached_cdram);
     printf("Interrupt counter: %x\n", *(int *)(cdram.cached_cdram + 4));
     printf("\n");
+
+    if (sceCompatGetStatus() == 1) {
+      sceCompatSuspendResume(1);
+    }
 
     SceCtrlData pad;
     sceCtrlReadBufferPositive(0, &pad, 1);
@@ -76,8 +81,6 @@ int main() {
       printf("sceCompatInterrupt: %x\n", res);
     }
     if (pad.buttons & SCE_CTRL_START) {
-      res = sceCompatInterrupt(2);
-      printf("sceCompatInterrupt: %x\n", res);
       break;
     }
 
@@ -86,6 +89,6 @@ int main() {
 
   sceCompatStop();
   sceCompatUninit();
-	
+
   return 0;
 }

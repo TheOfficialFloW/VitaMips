@@ -48,8 +48,8 @@ typedef struct {
 int sceKernelPowerLock(int lockType);
 int sceKernelPowerUnlock(int lockType);
 
-int sceKermitSystemEventHandler(int ev_id, char *ev_name, void *param,
-                                int *result);
+static int sceKermitSystemEventHandler(int ev_id, char *ev_name, void *param,
+                                       int *result);
 
 static PspSysEventHandler event_handler = {
   sizeof(PspSysEventHandler),
@@ -83,8 +83,8 @@ static void sceKermitWaitReady(void) {
   while ((REG32(0xBD000000)) != 0xf);
 }
 
-int sceKermitSystemEventHandler(int ev_id, char *ev_name, void *param,
-                                int *result) {
+static int sceKermitSystemEventHandler(int ev_id, char *ev_name, void *param,
+                                       int *result) {
   switch (ev_id) {
     case 0x4000:  // suspend
       REG32(0xBC300038) = REG32(0xBC300038) & 0x4002;

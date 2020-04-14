@@ -2,7 +2,7 @@ release: all
 	pcbctool -e $(TARGET).bin
 
 TARGET = payload
-OBJS = start.o main.o
+OBJS = start.o main.o sha1.o
 
 CFLAGS = -O2 -G0 -Wall -fno-pic
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
