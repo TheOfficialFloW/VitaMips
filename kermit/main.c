@@ -340,11 +340,10 @@ int sceKermitDisplaySync(void) {
   start = sceKernelGetSystemTimeLow();
   while ((sceKernelGetSystemTimeLow() - start) < 64);
 
-  raiseCompatInterrupt(0x400);
+  raiseCompatInterrupt(1 << 10);
+  while ((REG32(0xBC300030) & (1 << 10)) == 0);
 
-  while ((REG32(0xBC300030) & 0x400) == 0);
-
-  REG32(0xBC300030) = 0x400;
+  REG32(0xBC300030) = 1 << 10;
   __asm__ volatile ("sync");
 
   REG32(0xBE140000) |= 3;
