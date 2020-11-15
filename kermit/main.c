@@ -342,7 +342,6 @@ int sceKermitDisplaySync(void) {
 
   raiseCompatInterrupt(1 << 10);
   while ((REG32(0xBC300030) & (1 << 10)) == 0);
-
   REG32(0xBC300030) = 1 << 10;
   __asm__ volatile ("sync");
 
